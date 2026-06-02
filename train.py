@@ -10,11 +10,18 @@ from rough_path import rough_path_score
 
 def normalize_scores(score_dict):
     scores = np.array(list(score_dict.values()))
-    min_s, max_s = scores.min(), scores.max()
-    if max_s - min_s < 1e-12:
+    # Remove any nan/inf
+    scores = scores[np.isfinite(scores)]
+    if len(scores) == 0:
         return {k: 0.0 for k in score_dict}
+    min_s, max_s = scores.min(), scores.max()
+    # Add small epsilon to avoid division by zero
+    if max_s - min_s < 1e-12:
+        # All scores equal -> return uniform 0.5
+        return {k: 0.5 for k in score_dict}
     norm = (scores - min_s) / (max_s - min_s)
-    return {ticker: float(norm[i]) for i, ticker in enumerate(score_dict.keys())}
+    tickers = list(score_dict.keys())
+    return {tickers[i]: float(norm[i]) for i in range(len(norm))}
 
 def run_for_window(returns, window_days):
     if len(returns) < window_days:
@@ -26,9 +33,12 @@ def run_for_window(returns, window_days):
             ret_window[ticker].values,
             p=config.P_VARIATION,
             threshold=config.BERNOULLI_THRESHOLD,
-            invert=False   # we keep raw p‑variation (higher = rougher)
+            invert=False
         )
-        raw_scores[ticker] = s
+        # Replace NaN/inf with 0
+        if not np.isfinite(s):
+            s = 0.0
+        raw_scores[ticker] = float(s)
     norm_scores = normalize_scores(raw_scores)
     sorted_norm = sorted(norm_scores.items(), key=lambda x: x[1], reverse=True)
     top_etfs = [{"ticker": t, "rough_score_norm": s, "raw_score": raw_scores[t]} for t, s in sorted_norm[:config.TOP_N]]
