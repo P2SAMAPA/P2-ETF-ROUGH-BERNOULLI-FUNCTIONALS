@@ -22,8 +22,13 @@ def run_for_window(returns, window_days):
     ret_window = returns.iloc[-window_days:]
     raw_scores = {}
     for ticker in ret_window.columns:
-        score = rough_path_score(ret_window[ticker], p=config.P_VARIATION_ORDER)
-        raw_scores[ticker] = score
+        s = rough_path_score(
+            ret_window[ticker].values,
+            p=config.P_VARIATION,
+            threshold=config.BERNOULLI_THRESHOLD,
+            invert=False   # we keep raw p‑variation (higher = rougher)
+        )
+        raw_scores[ticker] = s
     norm_scores = normalize_scores(raw_scores)
     sorted_norm = sorted(norm_scores.items(), key=lambda x: x[1], reverse=True)
     top_etfs = [{"ticker": t, "rough_score_norm": s, "raw_score": raw_scores[t]} for t, s in sorted_norm[:config.TOP_N]]
@@ -40,7 +45,8 @@ def main():
     results = {
         "run_date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "windows": config.WINDOWS,
-        "p_variation_order": config.P_VARIATION_ORDER,
+        "p_variation": config.P_VARIATION,
+        "bernoulli_threshold": config.BERNOULLI_THRESHOLD,
         "universes": {}
     }
     for uni_name in config.UNIVERSES.keys():
