@@ -2,7 +2,7 @@ import os
 
 HF_TOKEN = os.environ.get("HF_TOKEN", "")
 DATA_REPO = "P2SAMAPA/fi-etf-macro-signal-master-data"
-OUTPUT_REPO = "P2SAMAPA/p2-etf-rough-bernoulli-results"
+OUTPUT_REPO = "P2SAMAPA/p2-etf-rough-bernoulli-functionals-results"
 
 WINDOWS = [63, 252, 504, 1008, 2016, 4032, 4536]
 
@@ -20,6 +20,6 @@ UNIVERSES = {
 }
 
 # Rough path parameters
-P_VARIATION = 2                # compute 2‑variation (quadratic variation)
+P_VARIATION = 2                # order of p‑variation (2 = quadratic variation)
 BERNOULLI_THRESHOLD = 0.5      # threshold for Bernoulli functional
 TOP_N = 3
