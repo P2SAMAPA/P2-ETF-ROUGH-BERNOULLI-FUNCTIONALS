@@ -1,36 +1,28 @@
 import numpy as np
-from scipy.special import comb
 
-def p_variation(series, p=2):
-    """
-    Compute p‑variation of a 1D time series.
-    p=2 gives quadratic variation (realised variance).
-    """
-    if len(series) < 2:
+def p_variation(returns, p=2.0):
+    increments = np.diff(returns)
+    if len(increments) == 0:
         return 0.0
-    diff = np.diff(series)
-    if p == 2:
-        # quadratic variation
-        return np.sum(diff**2)
+    var = np.sum(np.abs(increments) ** p)
+    return var / len(increments)
+
+def bernoulli_functional(returns, threshold=0.5):
+    increments = np.diff(returns)
+    if len(increments) == 0:
+        return 0.0
+    return np.mean(np.abs(increments) > threshold)
+
+def rough_path_score(returns, p=2.0, threshold=0.5, invert=False):
+    """
+    Compute roughness score (p-variation) or smoothness if invert=True.
+    `threshold` is kept for API consistency with Bernoulli functional.
+    """
+    pvar = p_variation(returns, p)
+    if invert:
+        # smoothness (low roughness)
+        score = 1.0 / (1.0 + pvar)
     else:
-        return np.sum(np.abs(diff)**p)
-
-def bernoulli_functional(signature, functional='exp'):
-    """
-    Apply a Bernoulli functional to the signature (simplified: use the signature's first level).
-    For this engine, we use the p‑variation as the score directly.
-    """
-    # For simplicity, we just return the p‑variation as the score
-    return signature
-
-def rough_path_score(returns, p=2):
-    """
-    Compute the p‑variation of the return series as a roughness measure.
-    """
-    ret_series = returns.dropna().values
-    if len(ret_series) < 2:
-        return 0.0
-    var = p_variation(ret_series, p)
-    # Normalise by length to avoid scale dependence
-    var = var / len(ret_series)
-    return var
+        # roughness
+        score = pvar
+    return score
