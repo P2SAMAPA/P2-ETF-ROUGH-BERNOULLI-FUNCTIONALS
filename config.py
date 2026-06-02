@@ -20,6 +20,6 @@ UNIVERSES = {
 }
 
 # Rough path parameters
-P_VARIATION_ORDER = 2           # compute 2‑variation (quadratic variation)
-BERNOULLI_FUNCTIONAL = "exp"    # functional of signature (placeholder)
+P_VARIATION = 2                # compute 2‑variation (quadratic variation)
+BERNOULLI_THRESHOLD = 0.5      # threshold for Bernoulli functional
 TOP_N = 3
