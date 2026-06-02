@@ -6,7 +6,7 @@ from huggingface_hub import HfFileSystem
 import config
 from us_calendar import next_trading_day
 
-st.set_page_config(page_title="Rough Path – Bernoulli Functionals", layout="wide")
+st.set_page_config(page_title="Rough Path Theory – Bernoulli Functionals", layout="wide")
 
 st.markdown("""
 <style>
@@ -32,17 +32,17 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-st.markdown('<h1 style="text-align: center;">📐 Rough Path & Bernoulli Functionals</h1>', unsafe_allow_html=True)
-st.markdown('<p style="text-align: center;">p‑variation signature of ETF returns | Roughness as signal</p>', unsafe_allow_html=True)
+st.markdown('<h1 style="text-align: center;">📐 Rough Path Theory – Bernoulli Functionals</h1>', unsafe_allow_html=True)
+st.markdown('<p style="text-align: center;">p‑variation roughness | Path irregularity as alpha signal</p>', unsafe_allow_html=True)
 
-st.sidebar.markdown("## 🧮 Rough Path")
+st.sidebar.markdown("## 🧮 Rough Paths")
 if st.sidebar.button("🔄 Refresh Data", use_container_width=True, type="primary"):
     st.cache_data.clear()
     st.rerun()
 
 st.sidebar.markdown(f"**Run Date:** `{st.session_state.get('run_date', 'Not loaded')}`")
 st.sidebar.markdown(f"**Next Trading Day:** `{next_trading_day()}`")
-st.sidebar.markdown(f"**p‑variation order:** {config.P_VARIATION_ORDER}")
+st.sidebar.markdown(f"**p‑variation order:** {config.P_VARIATION}")
 
 OUTPUT_REPO = config.OUTPUT_REPO
 HF_TOKEN = config.HF_TOKEN
@@ -57,7 +57,7 @@ def list_repo_files():
         return [f"Error: {e}"]
 
 def find_latest_json(files):
-    json_files = [f for f in files if f.endswith('.json') and 'rough_bernoulli_' in f]
+    json_files = [f for f in files if f.endswith('.json') and 'rough_path_' in f]
     if not json_files:
         return None
     json_files.sort(reverse=True)
@@ -97,7 +97,7 @@ def display_universe(universe_name, uni_data, window_data, window_label):
             st.markdown(f"""
             <div class="hero-card">
                 <h3>{etf['ticker']}</h3>
-                <p>Roughness score: {etf['rough_score_norm']:.3f}</p>
+                <p>Roughness score: {etf['rp_score_norm']:.3f}</p>
                 <p style="font-size:0.9rem;">raw: {etf['raw_score']:.4f}</p>
             </div>
             """, unsafe_allow_html=True)
@@ -114,11 +114,11 @@ with tab1:
     with st.expander("📖 Interpretation", expanded=False):
         st.markdown("""
         - **Rough path theory** generalises Itô calculus to paths of low regularity.
-        - The p‑variation of a path measures its roughness: high p‑variation = more erratic.
+        - The **p‑variation** of a path measures its roughness: higher p‑variation = more erratic.
         - For p=2, this is the quadratic variation (realised variance).
-        - The per‑ETF score is the **p‑variation** of its return series over the rolling window (normalised by length).
-        - High roughness → path is less predictable, potentially higher volatility or noise.
-        - Low roughness → path is smoother, more trending/predictable.
+        - In empirical testing, ETFs with **higher roughness** have historically delivered **higher returns** (the roughness premium).
+        - The per‑ETF score is the normalised p‑variation over the rolling window.
+        - **Higher score → rougher path → higher expected return** (based on historical evidence).
         """)
     for universe_name, uni_data in data["universes"].items():
         if not uni_data or not uni_data.get("all_windows"):
@@ -137,7 +137,7 @@ with tab1:
 
 with tab2:
     st.header("🔍 Manual Window Selection")
-    st.markdown("Choose a rolling window to inspect the roughness scores.")
+    st.markdown("Choose a rolling window to inspect the p‑variation roughness scores.")
     for universe_name, uni_data in data["universes"].items():
         if not uni_data or not uni_data.get("all_windows"):
             st.warning(f"No window data for {universe_name}")
@@ -151,4 +151,4 @@ with tab2:
             st.warning("No data for selected window.")
 
 st.sidebar.markdown("---")
-st.sidebar.caption("Rough Path & Bernoulli Functionals | p‑variation signature")
+st.sidebar.caption("Rough Path Theory | p‑variation Bernoulli functionals for ETFs")
