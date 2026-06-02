@@ -5,24 +5,14 @@ def p_variation(returns, p=2.0):
     if len(increments) == 0:
         return 0.0
     var = np.sum(np.abs(increments) ** p)
-    return var / len(increments)
-
-def bernoulli_functional(returns, threshold=0.5):
-    increments = np.diff(returns)
-    if len(increments) == 0:
-        return 0.0
-    return np.mean(np.abs(increments) > threshold)
+    return var / max(len(increments), 1)
 
 def rough_path_score(returns, p=2.0, threshold=0.5, invert=False):
-    """
-    Compute roughness score (p-variation) or smoothness if invert=True.
-    `threshold` is kept for API consistency with Bernoulli functional.
-    """
     pvar = p_variation(returns, p)
+    if not np.isfinite(pvar):
+        pvar = 0.0
     if invert:
-        # smoothness (low roughness)
-        score = 1.0 / (1.0 + pvar)
+        score = 1.0 / (1.0 + pvar) if pvar >= 0 else 0.0
     else:
-        # roughness
         score = pvar
     return score
